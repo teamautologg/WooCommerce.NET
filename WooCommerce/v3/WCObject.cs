@@ -47,6 +47,7 @@ namespace WooCommerceNET.WooCommerce.v3
 
             Coupon = new WCItem<T1>(api);
             Customer = new WCItem<T2>(api);
+            Invoices = new WcInvoiceItem(api);
             Product = new WCProductItem(api);
             ProductReview = new WCItem<T4>(api);
             Order = new WCOrderItem(api);
@@ -71,6 +72,7 @@ namespace WooCommerceNET.WooCommerce.v3
         public WCItem<T1> Coupon { get; protected set; }
 
         public WCItem<T2> Customer { get; protected set; }
+        public WcInvoiceItem Invoices { get; protected set; }
 
         public WCProductItem Product { get; protected set; }
 

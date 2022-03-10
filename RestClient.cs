@@ -23,7 +23,7 @@ namespace WooCommerceNET
             //TODO - Need to work on requestFilter and responseFilter
         }
 
-        public override async Task<string> SendHttpClientRequest<T>(string endpoint, RequestMethod method, T requestBody, Dictionary<string, string> parms = null)
+        public override async Task<string> SendHttpClientRequest<T>(string endpoint, RequestMethod method, T requestBody, Dictionary<string, string> parms = null, bool removeWcFromUrl = false)
         {
             HttpRequestMessage request = new HttpRequestMessage();
 

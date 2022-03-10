@@ -149,7 +149,7 @@ namespace WooCommerceNET
         /// <param name="requestBody">If your call doesn't have a body, please pass string.Empty, not null.</param>
         /// <param name="parms"></param>
         /// <returns>json string</returns>
-        public virtual async Task<string> SendHttpClientRequest<T>(string endpoint, RequestMethod method, T requestBody, Dictionary<string, string> parms = null)
+        public virtual async Task<string> SendHttpClientRequest<T>(string endpoint, RequestMethod method, T requestBody, Dictionary<string, string> parms = null, bool removeWcFromUrl = false)
         {
             HttpWebRequest httpWebRequest = null;
             try
@@ -187,11 +187,18 @@ namespace WooCommerceNET
                     JWT_Object = DeserializeJSon<WP_JWT_Object>(result);
                 }
 
+                var wcUrl = wc_url + GetOAuthEndPoint(method.ToString(), endpoint, parms);
+
+                if(removeWcFromUrl)
+                {
+                    wcUrl = wcUrl.Replace("/wc/v3", "");
+                }
+
                 if (wc_url.StartsWith("https", StringComparison.OrdinalIgnoreCase) && Version != APIVersion.WordPressAPI && Version != APIVersion.WordPressAPIJWT)
                 {
                     if (AuthorizedHeader == true)
                     {
-                        httpWebRequest = (HttpWebRequest)WebRequest.Create(wc_url + GetOAuthEndPoint(method.ToString(), endpoint, parms));
+                        httpWebRequest = (HttpWebRequest)WebRequest.Create(wcUrl);
                         if (WCAuthWithJWT && JWT_Object != null)
                             httpWebRequest.Headers["Authorization"] = "Bearer " + JWT_Object.token;
                         else
@@ -207,12 +214,12 @@ namespace WooCommerceNET
                         if (!parms.ContainsKey("consumer_secret"))
                             parms.Add("consumer_secret", wc_secret);
 
-                        httpWebRequest = (HttpWebRequest)WebRequest.Create(wc_url + GetOAuthEndPoint(method.ToString(), endpoint, parms));
+                        httpWebRequest = (HttpWebRequest)WebRequest.Create(wcUrl);
                     }
                 }
                 else
                 {
-                    httpWebRequest = (HttpWebRequest)WebRequest.Create(wc_url + GetOAuthEndPoint(method.ToString(), endpoint, parms));
+                    httpWebRequest = (HttpWebRequest)WebRequest.Create(wcUrl);
                     if (Version == APIVersion.WordPressAPIJWT)
                         httpWebRequest.Headers["Authorization"] = "Bearer " + JWT_Object.token;
                 }
@@ -296,9 +303,9 @@ namespace WooCommerceNET
             }
         }
 
-        public async Task<string> GetRestful(string endpoint, Dictionary<string, string> parms = null)
+        public async Task<string> GetRestful(string endpoint, Dictionary<string, string> parms = null, bool removeWcFromUrl = false)
         {
-            return await SendHttpClientRequest(endpoint, RequestMethod.GET, string.Empty, parms).ConfigureAwait(false);
+            return await SendHttpClientRequest(endpoint, RequestMethod.GET, string.Empty, parms, removeWcFromUrl).ConfigureAwait(false);
         }
 
         public async Task<string> PostRestful(string endpoint, object jsonObject, Dictionary<string, string> parms = null)

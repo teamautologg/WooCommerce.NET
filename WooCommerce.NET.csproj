@@ -26,12 +26,15 @@ Changes Doc: https://github.com/XiaoFaye/WooCommerce.NET/blob/master/Changes.md
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <AssemblyVersion>0.8.4.0</AssemblyVersion>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>sn.key.snk</AssemblyOriginatorKeyFile>
     <PackageLicenseFile>License.md</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <FileVersion>0.8.4.0</FileVersion>
     <PackageTags>WooCommerce Wordpress Restful API</PackageTags>
   </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+	</ItemGroup>
 
   <ItemGroup>
     <None Include="License.md">
