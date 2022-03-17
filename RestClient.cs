@@ -13,14 +13,24 @@ namespace WooCommerceNET
     public class RestClient : RestAPI
     {
         // HttpClient is intended to be instantiated once per application, rather than per-use.
-        private static readonly HttpClient HttpClient = new HttpClient();
+        private readonly HttpClient HttpClient;
 
-        public RestClient(string url, string key, string secret, bool authorizedHeader = true,
+        public RestClient(string url, string key, string secret, bool authorizedHeader = true, Dictionary<string, string> cookies = null,
+                            string basicUser = null, string basicPassword = null,
                           Func<string, string> jsonSerializeFilter = null,
                           Func<string, string> jsonDeserializeFilter = null)
-          : base(url, key, secret, authorizedHeader, jsonSerializeFilter, jsonDeserializeFilter)
+          : base(url, key, secret, authorizedHeader, cookies, basicUser, basicPassword, jsonSerializeFilter, jsonDeserializeFilter)
         {
             //TODO - Need to work on requestFilter and responseFilter
+            if(_cookieContainer != null)
+            {
+                var handler = new HttpClientHandler() { CookieContainer = _cookieContainer };
+                HttpClient =  new HttpClient(handler);
+            }
+            else
+            {
+                HttpClient = new HttpClient();
+            }
         }
 
         public override async Task<string> SendHttpClientRequest<T>(string endpoint, RequestMethod method, T requestBody, Dictionary<string, string> parms = null, bool removeWcFromUrl = false)
@@ -96,6 +106,10 @@ namespace WooCommerceNET
 
 
             request.Method = new HttpMethod(method.ToString());
+            if (!String.IsNullOrEmpty(basicAuth))
+            {
+                request.Headers.Add("Authorization", $"Basic {basicAuth}");
+            }
 
             //if (webRequestFilter != null)
             //    webRequestFilter.Invoke(httpWebRequest);

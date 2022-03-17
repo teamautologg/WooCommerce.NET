@@ -27,6 +27,7 @@ namespace WooCommerceNET
         protected Func<string, string> jsonDeseFilter;
         protected Action<HttpWebRequest> webRequestFilter;
         protected Action<HttpWebResponse> webResponseFilter;
+        protected string basicAuth;
 
         /// <summary>
         /// For Wordpress REST API with OAuth 1.0 ONLY
@@ -61,6 +62,8 @@ namespace WooCommerceNET
         /// </summary>
         public bool Debug { get; set; }
 
+        protected readonly CookieContainer _cookieContainer;
+
         /// <summary>
         /// Initialize the RestAPI object
         /// </summary>
@@ -76,6 +79,8 @@ namespace WooCommerceNET
         /// <param name="requestFilter">Provide a function to modify the HttpWebRequest object.</param>
         /// <param name="responseFilter">Provide a function to grab information from the HttpWebResponse object.</param>
         public RestAPI(string url, string key, string secret, bool authorizedHeader = true,
+                            Dictionary<string, string> cookies = null,
+                            string basicUser = null, string basicPassword = null,
                             Func<string, string> jsonSerializeFilter = null,
                             Func<string, string> jsonDeserializeFilter = null,
                             Action<HttpWebRequest> requestFilter = null,
@@ -123,6 +128,22 @@ namespace WooCommerceNET
             webRequestFilter = requestFilter;
             webResponseFilter = responseFilter;
 
+            if(cookies != null)
+            {
+                _cookieContainer = new CookieContainer();
+                var parsedUri = new Uri(Url);
+                foreach(var kvp in cookies)
+                {
+                    _cookieContainer.Add(new Cookie(kvp.Key, kvp.Value, "/", parsedUri.Authority));
+                }
+            }
+
+            if(basicUser != null && basicPassword != null)
+            {
+                basicAuth = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1")
+                               .GetBytes(basicUser + ":" + basicPassword));
+            }
+
             //wc_Proxy = useProxy;
         }
 
@@ -168,6 +189,15 @@ namespace WooCommerceNET
                                                                                         .Replace("wc/v3", "jwt-auth/v1/token"));
                     request.Method = "POST";
                     request.ContentType = "application/x-www-form-urlencoded";
+                    if (_cookieContainer != null)
+                    {
+                        request.CookieContainer = _cookieContainer;
+                    }
+
+                    if(!String.IsNullOrEmpty(basicAuth))
+                    {
+                        request.Headers.Add("Authorization", $"Basic {basicAuth}");
+                    }
 
                     if (JWTRequestFilter != null)
                         JWTRequestFilter.Invoke(request);
@@ -199,6 +229,9 @@ namespace WooCommerceNET
                     if (AuthorizedHeader == true)
                     {
                         httpWebRequest = (HttpWebRequest)WebRequest.Create(wcUrl);
+
+                       
+
                         if (WCAuthWithJWT && JWT_Object != null)
                             httpWebRequest.Headers["Authorization"] = "Bearer " + JWT_Object.token;
                         else
@@ -215,6 +248,7 @@ namespace WooCommerceNET
                             parms.Add("consumer_secret", wc_secret);
 
                         httpWebRequest = (HttpWebRequest)WebRequest.Create(wcUrl);
+
                     }
                 }
                 else
@@ -227,6 +261,15 @@ namespace WooCommerceNET
                 // start the stream immediately
                 httpWebRequest.Method = method.ToString();
                 httpWebRequest.AllowReadStreamBuffering = false;
+
+                if (_cookieContainer != null)
+                {
+                    httpWebRequest.CookieContainer = _cookieContainer;
+                }
+                if (!String.IsNullOrEmpty(basicAuth))
+                {
+                    httpWebRequest.Headers.Add("Authorization", $"Basic {basicAuth}");
+                }
 
                 if (webRequestFilter != null)
                     webRequestFilter.Invoke(httpWebRequest);
@@ -281,6 +324,7 @@ namespace WooCommerceNET
 
                 // asynchronously get a response
                 WebResponse wr = await httpWebRequest.GetResponseAsync().ConfigureAwait(false);
+
 
                 if (webResponseFilter != null)
                     webResponseFilter.Invoke((HttpWebResponse)wr);
