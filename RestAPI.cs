@@ -267,7 +267,9 @@ namespace WooCommerceNET
                         if (!parms.ContainsKey("consumer_secret"))
                             parms.Add("consumer_secret", wc_secret);
 
-                        httpWebRequest = (HttpWebRequest)WebRequest.Create(wcUrl);
+                      
+                        var requestUri = new Uri(wc_url + GetOAuthEndPoint(method.ToString(), endpoint, parms));
+                        httpWebRequest = (HttpWebRequest)WebRequest.Create(requestUri);
 
                     }
                 }
