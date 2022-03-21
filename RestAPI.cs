@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Polly;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -171,6 +172,25 @@ namespace WooCommerceNET
         /// <param name="parms"></param>
         /// <returns>json string</returns>
         public virtual async Task<string> SendHttpClientRequest<T>(string endpoint, RequestMethod method, T requestBody, Dictionary<string, string> parms = null, bool removeWcFromUrl = false)
+        {
+            var retryPolicy = Policy<string>.Handle<Exception>().WaitAndRetry(retryCount: 3, sleepDurationProvider: _ => TimeSpan.FromSeconds(1));
+
+            await Task.CompletedTask;
+            var result = retryPolicy.ExecuteAndCapture(() =>
+              {
+                  return SendHttpClientRequestInternal(endpoint, method, requestBody, parms, removeWcFromUrl).Result;
+              });
+
+            if(result.Outcome == OutcomeType.Failure)
+            {
+                throw result.FinalException;
+            }
+
+            return result.Result;
+        }
+
+      
+        private async Task<string> SendHttpClientRequestInternal<T>(string endpoint, RequestMethod method, T requestBody, Dictionary<string, string> parms = null, bool removeWcFromUrl = false)
         {
             HttpWebRequest httpWebRequest = null;
             try
