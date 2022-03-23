@@ -67,11 +67,13 @@ namespace WooCommerceNET.WooCommerce.v3
             Setting = new WCItem<Setting>(api);
             Data = new WCItem<Data>(api);
             Plugin = new WCItem<Plugins>(api);
+            Subscription = new WCItem<Subscription>(api);
         }
 
         public WCItem<T1> Coupon { get; protected set; }
 
         public WCItem<T2> Customer { get; protected set; }
+        public WCItem<Subscription> Subscription { get; protected set; }
         public WcInvoiceItem Invoices { get; protected set; }
 
         public WCProductItem Product { get; protected set; }

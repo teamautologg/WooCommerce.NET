@@ -1,4 +1,5 @@
-﻿using Polly;
+﻿using Newtonsoft.Json;
+using Polly;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -498,33 +499,9 @@ namespace WooCommerceNET
             if (jsonDeseFilter != null)
                 jsonString = jsonDeseFilter.Invoke(jsonString);
 
-            Type dT = typeof(T);
-
             try
             {
-                if (dT.Name.EndsWith("List"))
-                    dT = dT.GetTypeInfo().DeclaredProperties.First().PropertyType.GenericTypeArguments[0];
-
-                if (dT.FullName.StartsWith("System.Collections.Generic.List"))
-                {
-                    dT = dT.GetProperty("Item").PropertyType;
-                }
-
-                if (dT.GetMethod("FormatJsonD") != null)
-                {
-                    jsonString = dT.GetMethod("FormatJsonD").Invoke(null, new object[] { jsonString }).ToString();
-                }
-
-                DataContractJsonSerializerSettings settings = new DataContractJsonSerializerSettings()
-                {
-                    DateTimeFormat = new DateTimeFormat(DateTimeFormat),
-                    UseSimpleDictionaryFormat = true
-                };
-
-                DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T), settings);
-                MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(jsonString));
-                T obj = (T)ser.ReadObject(stream);
-                stream.Dispose();
+                var obj = JsonConvert.DeserializeObject<T>(jsonString);
                 return obj;
             }
             catch (Exception ex)
