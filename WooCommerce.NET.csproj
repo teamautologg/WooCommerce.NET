@@ -30,6 +30,7 @@ Changes Doc: https://github.com/XiaoFaye/WooCommerce.NET/blob/master/Changes.md
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <FileVersion>0.8.4.0</FileVersion>
     <PackageTags>WooCommerce Wordpress Restful API</PackageTags>
+    <Configurations>Debug;Release;Prod</Configurations>
   </PropertyGroup>
 
 	<ItemGroup>
