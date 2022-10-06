@@ -9,7 +9,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading.Tasks;
 using WooCommerceNET.Base;
@@ -463,35 +462,7 @@ namespace WooCommerceNET
 
         public virtual string SerializeJSon<T>(T t)
         {
-            DataContractJsonSerializerSettings settings = new DataContractJsonSerializerSettings()
-            {
-                DateTimeFormat = new DateTimeFormat(DateTimeFormat),
-                UseSimpleDictionaryFormat = true
-            };
-
-            MemoryStream stream = new MemoryStream();
-            DataContractJsonSerializer ds = new DataContractJsonSerializer(t.GetType(), settings);
-            ds.WriteObject(stream, t);
-            byte[] data = stream.ToArray();
-            string jsonString = Encoding.UTF8.GetString(data, 0, data.Length);
-
-            if (t.GetType().GetMethod("FormatJsonS") != null)
-            {
-                jsonString = t.GetType().GetMethod("FormatJsonS").Invoke(null, new object[] { jsonString }).ToString();
-            }
-
-            if (IsLegacy)
-                if (typeof(T).IsArray)
-                    jsonString = "{\"" + typeof(T).Name.ToLower().Replace("[]", "s") + "\":" + jsonString + "}";
-                else
-                    jsonString = "{\"" + typeof(T).Name.ToLower() + "\":" + jsonString + "}";
-
-            stream.Dispose();
-
-            if (jsonSeFilter != null)
-                jsonString = jsonSeFilter.Invoke(jsonString);
-
-            return jsonString;
+            return JsonConvert.SerializeObject(t);
         }
 
         public virtual T DeserializeJSon<T>(string jsonString)
