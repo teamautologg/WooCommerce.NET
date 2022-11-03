@@ -44,16 +44,16 @@ namespace WooCommerceNET.WooCommerce.v3
         public string tax_class { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
-        public double subtotal { get; set; }
+        public string subtotal { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
-        public double subtotal_tax { get; set; }
+        public string subtotal_tax { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
-        public double total { get; set; }
+        public string total { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
-        public double total_tax { get; set; }
+        public string total_tax { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
         public List<SubscriptionMetaData> meta_data { get; set; }
@@ -209,5 +209,6 @@ namespace WooCommerceNET.WooCommerce.v3
 
         [DataMember(EmitDefaultValue = false)]
         public string resubscribed_subscription { get; set; }
+
     }
 }
