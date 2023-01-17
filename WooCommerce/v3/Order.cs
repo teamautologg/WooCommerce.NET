@@ -12,5 +12,7 @@ namespace WooCommerceNET.WooCommerce.v3
         {
             get; set;
         }
+
+        public long? InvoiceId { get; set; }
     }
 }

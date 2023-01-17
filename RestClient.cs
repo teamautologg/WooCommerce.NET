@@ -25,7 +25,7 @@ namespace WooCommerceNET
             //TODO - Need to work on requestFilter and responseFilter
             if(_cookieContainer != null)
             {
-                var handler = new HttpClientHandler() { CookieContainer = _cookieContainer };
+                var handler = new HttpClientHandler { CookieContainer = _cookieContainer };
                 HttpClient =  new HttpClient(handler);
             }
             else
