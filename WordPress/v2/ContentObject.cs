@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Text;
-using WooCommerceNET.Base;
+﻿using System.Runtime.Serialization;
 
 namespace WooCommerce.NET.WordPress.v2
 {

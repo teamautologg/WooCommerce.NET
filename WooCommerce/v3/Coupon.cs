@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using WooCommerceNET.Base;
+﻿using WooCommerceNET.Base;
 
 namespace WooCommerceNET.WooCommerce.v3
 {
