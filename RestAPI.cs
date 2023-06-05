@@ -458,7 +458,10 @@ namespace WooCommerceNET
 
         public virtual string SerializeJSon<T>(T t)
         {
-            return JsonConvert.SerializeObject(t);
+            return JsonConvert.SerializeObject(t, new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore
+            });
         }
 
         public virtual T DeserializeJSon<T>(string jsonString)
