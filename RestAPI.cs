@@ -460,7 +460,8 @@ namespace WooCommerceNET
         {
             return JsonConvert.SerializeObject(t, new JsonSerializerSettings
             {
-                NullValueHandling = NullValueHandling.Ignore
+                NullValueHandling = NullValueHandling.Ignore,
+                DateFormatString = "yyyy-MM-dd HH:mm:ss"
             });
         }
 
