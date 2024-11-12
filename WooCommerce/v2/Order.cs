@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using WooCommerce.NET.WooCommerce;
 using WooCommerceNET.Base;
 
 namespace WooCommerceNET.WooCommerce.v2
@@ -8,7 +9,7 @@ namespace WooCommerceNET.WooCommerce.v2
     public class OrderBatch : BatchObject<Order> { }
 
     [DataContract]
-    public class Order : JsonObject
+    public class Order : WooCommerceEntity
     {
         public static string Endpoint { get { return "orders"; } }
 
@@ -17,7 +18,7 @@ namespace WooCommerceNET.WooCommerce.v2
         /// read-only
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public ulong? id { get; set; }
+        public override long? id { get; set; }
 
         /// <summary>
         /// Parent order ID.
@@ -430,14 +431,14 @@ namespace WooCommerceNET.WooCommerce.v2
     }
 
     [DataContract]
-    public class OrderLineItem : JsonObject
+    public class OrderLineItem : WooCommerceEntity
     {
         /// <summary>
         /// Item ID. 
         /// read-only
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public ulong? id { get; set; }
+        public override long? id { get; set; }
 
         /// <summary>
         /// Product name.

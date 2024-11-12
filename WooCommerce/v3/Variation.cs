@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using WooCommerce.NET.WooCommerce;
 using WooCommerceNET.Base;
 
 namespace WooCommerceNET.WooCommerce.v3
 {
     [DataContract]
-    public class Variation : JsonObject
+    public class Variation : WooCommerceEntity
     {
         public static string Endpoint { get { return "variations"; } }
 
@@ -15,7 +16,7 @@ namespace WooCommerceNET.WooCommerce.v3
         /// read-only
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public ulong? id { get; set; }
+        public override long? id { get; set; }
 
         /// <summary>
         /// The date the variation was created, in the site’s timezone. 

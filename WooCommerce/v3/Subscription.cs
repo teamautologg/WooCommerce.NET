@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using WooCommerce.NET.WooCommerce;
 
 namespace WooCommerceNET.WooCommerce.v3
 {
-    public class SubscriptionMetaData
+    public class SubscriptionMetaData : WooCommerceEntity
     {
 
         [DataMember(EmitDefaultValue = false)]
-        public int id { get; set; }
+        public override long? id { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
         public string key { get; set; }
@@ -23,10 +24,10 @@ namespace WooCommerceNET.WooCommerce.v3
         public string display_value { get; set; }
     }
 
-    public class SubscriptionLineItem
+    public class SubscriptionLineItem : WooCommerceEntity
     {
         [DataMember(EmitDefaultValue = false)]
-        public int? id { get; set; }
+        public override long? id { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
         public string name { get; set; }
@@ -68,12 +69,12 @@ namespace WooCommerceNET.WooCommerce.v3
         public string parent_name { get; set; }
     }
 
-    public class Subscription
+    public class Subscription : WooCommerceEntity
     {
         public static string Endpoint { get { return "subscriptions"; } }
 
         [DataMember(EmitDefaultValue = false)]
-        public int? id { get; set; }
+        public override long? id { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
         public int parent_id { get; set; }

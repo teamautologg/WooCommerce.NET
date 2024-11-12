@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using WooCommerce.NET.WooCommerce;
 using WooCommerceNET.Base;
 
 namespace WooCommerceNET.WooCommerce.v3
@@ -8,7 +9,7 @@ namespace WooCommerceNET.WooCommerce.v3
     public class CustomerBatch : BatchObject<Customer> { }
 
     [DataContract]
-    public class Customer : JsonObject
+    public class Customer : WooCommerceEntity
     {
         public static string Endpoint { get { return "customers"; } }
 
@@ -17,7 +18,7 @@ namespace WooCommerceNET.WooCommerce.v3
         /// read-only
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public long? id { get; set; }
+        public override long? id { get; set; }
 
         /// <summary>
         /// The date the customer was created, in the site’s timezone. 

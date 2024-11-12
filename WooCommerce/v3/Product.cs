@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using WooCommerce.NET.WooCommerce;
 using WooCommerceNET.Base;
 
 namespace WooCommerceNET.WooCommerce.v3
@@ -8,7 +9,7 @@ namespace WooCommerceNET.WooCommerce.v3
     public class ProductBatch : BatchObject<Product> { }
 
     [DataContract]
-    public class Product : JsonObject
+    public class Product : WooCommerceEntity
     {
         public static string Endpoint { get { return "products"; } }
 
@@ -17,7 +18,7 @@ namespace WooCommerceNET.WooCommerce.v3
         /// read-only
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public ulong? id { get; set; }
+        public override long? id { get; set; }
 
         /// <summary>
         /// Product name.
