@@ -21,7 +21,7 @@ namespace WooCommerceNET.WooCommerce.v3
         public string display_key { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
-        public string display_value { get; set; }
+        public object display_value { get; set; }
     }
 
     public class SubscriptionLineItem : WooCommerceEntity
