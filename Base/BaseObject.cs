@@ -172,7 +172,7 @@ namespace WooCommerceNET.Base
             return API.DeserializeJSon<T>(await API.PostRestful(APIEndpoint + "/" + id.ToString(), item, parms).ConfigureAwait(false));
         }
 
-        public virtual async Task<T> UpdateWithNull(int id, object item, Dictionary<string, string> parms = null)
+        public virtual async Task<T> UpdateWithNull(long id, object item, Dictionary<string, string> parms = null)
         {
             if (API.GetType().Name == "RestAPI")
             {
