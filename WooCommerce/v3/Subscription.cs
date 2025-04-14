@@ -211,5 +211,12 @@ namespace WooCommerceNET.WooCommerce.v3
         [DataMember(EmitDefaultValue = false)]
         public string resubscribed_subscription { get; set; }
 
+        public bool IsActive
+        {
+            get
+            {
+                return status != "cancelled" && status != "expired" && status != "pending";
+            }
+        }
     }
 }
