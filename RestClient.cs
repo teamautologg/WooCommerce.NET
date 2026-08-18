@@ -1,4 +1,4 @@
-using Polly;
+﻿using Polly;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -15,6 +15,13 @@ namespace WooCommerceNET
     {
         // HttpClient is intended to be instantiated once per application, rather than per-use.
         private readonly HttpClient HttpClient;
+
+        private const int MaxRetries = 3;
+
+        /// <summary>Ceiling for a single wait, so a Function cannot be parked indefinitely.</summary>
+        private static readonly TimeSpan MaxRetryDelay = TimeSpan.FromSeconds(60);
+
+        private static readonly Random Jitter = new Random();
 
         public RestClient(string url, string key, string secret, bool authorizedHeader = true, Dictionary<string, string> cookies = null,
                             string basicUser = null, string basicPassword = null,
@@ -34,15 +41,56 @@ namespace WooCommerceNET
             }
         }
 
+        /// <summary>How long to wait before attempt <paramref name="attempt"/> (1-based).</summary>
+        /// <remarks>
+        /// A rate limit needs real backoff: the shop answers 429 until its window rolls over, so the
+        /// previous fixed one second simply spent all three attempts inside the same window and then
+        /// gave up - which is what turned a paid licence upgrade into a retry storm. Honour
+        /// <c>Retry-After</c> when the server sends one, otherwise back off exponentially
+        /// (2s, 8s, 32s) with jitter so parallel callers do not line up on the same instant.
+        /// </remarks>
+        private static TimeSpan GetRetryDelay(int attempt, Exception exception)
+        {
+            if (exception is WooCommerceApiException woo && woo.RetryAfter.HasValue)
+            {
+                // Trust the shop, but do not let a stray header park a Function for minutes.
+                var advised = woo.RetryAfter.Value;
+                return advised > MaxRetryDelay ? MaxRetryDelay : advised;
+            }
+
+            var backoff = TimeSpan.FromSeconds(Math.Pow(4, attempt) / 2);
+            var jitter = TimeSpan.FromMilliseconds(Jitter.Next(0, 1000));
+            var delay = backoff + jitter;
+
+            return delay > MaxRetryDelay ? MaxRetryDelay : delay;
+        }
+
+        /// <summary>Retry only what another attempt can actually fix.</summary>
+        private static bool ShouldRetry(Exception exception)
+        {
+            if (exception is WooCommerceApiException woo)
+            {
+                // A 4xx other than 429 is our own bad request - repeating it just burns quota.
+                return woo.IsTransient;
+            }
+
+            // Anything that never reached the shop (socket, DNS, timeout) is worth another go.
+            return exception is HttpRequestException || exception is TaskCanceledException;
+        }
+
         public virtual async Task<string> SendHttpClientRequest<T>(string endpoint, RequestMethod method, T requestBody, Dictionary<string, string> parms = null, bool removeWcFromUrl = false)
         {
-            var retryPolicy = Policy<string>.Handle<Exception>().WaitAndRetry(retryCount: 3, sleepDurationProvider: _ => TimeSpan.FromSeconds(1));
+            var retryPolicy = Policy<string>
+                .Handle<Exception>(ShouldRetry)
+                .WaitAndRetryAsync(
+                    retryCount: MaxRetries,
+                    sleepDurationProvider: (attempt, outcome, _) => GetRetryDelay(attempt, outcome.Exception),
+                    onRetryAsync: (_, _, _, _) => Task.CompletedTask);
 
-            await Task.CompletedTask;
-            var result = retryPolicy.ExecuteAndCapture(() =>
-            {
-                return SendHttpClientRequestInternal(endpoint, method, requestBody, parms, removeWcFromUrl).Result;
-            });
+            // Async all the way: the old version blocked a thread on .Result for the whole sleep,
+            // which is exactly the thread a rate-limited Function cannot spare.
+            var result = await retryPolicy.ExecuteAndCaptureAsync(
+                () => SendHttpClientRequestInternal(endpoint, method, requestBody, parms, removeWcFromUrl));
 
             if (result.Outcome == OutcomeType.Failure)
             {
@@ -50,6 +98,29 @@ namespace WooCommerceNET
             }
 
             return result.Result;
+        }
+
+        private static TimeSpan? ReadRetryAfter(HttpResponseMessage response)
+        {
+            var retryAfter = response?.Headers?.RetryAfter;
+
+            if (retryAfter == null)
+            {
+                return null;
+            }
+
+            if (retryAfter.Delta.HasValue)
+            {
+                return retryAfter.Delta.Value;
+            }
+
+            if (retryAfter.Date.HasValue)
+            {
+                var wait = retryAfter.Date.Value - DateTimeOffset.UtcNow;
+                return wait > TimeSpan.Zero ? wait : TimeSpan.Zero;
+            }
+
+            return null;
         }
 
 
@@ -167,7 +238,10 @@ namespace WooCommerceNET
             }
             else
             {
-                throw new Exception(responseResult);
+                // The message stays the response body so existing logging is unchanged; the status
+                // and Retry-After ride along so the retry policy can tell a rate limit from a failure.
+                throw new WooCommerceApiException(responseMessage.StatusCode, responseResult,
+                    ReadRetryAfter(responseMessage));
             }
 
 
