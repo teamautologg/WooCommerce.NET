@@ -123,10 +123,21 @@ namespace WooCommerceNET.WooCommerce.v3
 
         public async Task<Invoice> GetInvoice(long orderId, Dictionary<string, string> parms = null)
         {
+            var invoiceList = await GetInvoices(orderId, parms).ConfigureAwait(false);
+
+            return invoiceList.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// All documents the shop issued for an order. An order can carry more than one: the invoice
+        /// itself plus any cancellation (storno) raised against it later on.
+        /// </summary>
+        public async Task<IList<Invoice>> GetInvoices(long orderId, Dictionary<string, string> parms = null)
+        {
             var json = await API.GetRestful(APIEndpoint + "/" + orderId.ToString() + "/invoices", parms).ConfigureAwait(false);
             var invoiceList = JsonConvert.DeserializeObject<IList<Invoice>>(json);
 
-            return invoiceList.FirstOrDefault();
+            return invoiceList ?? new List<Invoice>();
         }
 
         public async Task<InvoicePdf> GetInvoicePdf(long invoiceId, Dictionary<string, string> parms = null)
